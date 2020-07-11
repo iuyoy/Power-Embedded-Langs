@@ -1,0 +1,77 @@
+{
+	"name": "power-embedded-langs",
+	"displayName": "Power Embedded Langs",
+	"description": "A powerful extension to support most language features for embedded languages.",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.43.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./client/out/extension",
+	"contributes": {
+		"configuration": {
+			"title": "PowerEmbeddedLangs",
+			"properties": {
+				"PEL.enabledEmbeddedLanguages": {
+					"type": "array",
+					"description": "Specifies what embedded languages are enabled in this extension",
+					"default": [
+						"sql",
+						"javascript",
+						"css",
+						"html",
+						"yaml"
+					]
+				},
+				"PEL.enabledExternalLanguages": {
+					"type": "array",
+					"description": "Specifies what external languages are enabled in this extension",
+					"default": [
+						"python"
+					]
+				}
+			}
+		},
+		"languages": [
+			{
+				"id": "html2",
+				"extensions": [
+					".html2"
+				]
+			}
+		],
+		"grammars": [
+			{
+				"language": "html2",
+				"scopeName": "text.html2.basic",
+				"path": "./syntaxes/html2.tmLanguage.json"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "cd client && npm install && cd .. && npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"test": "node ./client/out/tests/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.46.0",
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^7.0.2",
+		"@types/node": "^13.11.0",
+		"eslint": "^7.1.0",
+		"@typescript-eslint/parser": "^2.30.0",
+		"@typescript-eslint/eslint-plugin": "^2.30.0",
+		"glob": "^7.1.6",
+		"mocha": "^7.1.2",
+		"typescript": "^3.9.4",
+		"vscode-test": "^1.3.0"
+	},
+	"dependencies": {}
+}
