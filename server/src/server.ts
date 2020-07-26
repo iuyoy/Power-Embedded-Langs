@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-// import { getLanguageService } from 'vscode-html-languageservice';
+import { getLanguageService } from 'vscode-html-languageservice';
 import { createConnection, InitializeParams, ProposedFeatures, TextDocuments, TextDocumentSyncKind } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -15,7 +15,7 @@ let connection = createConnection(ProposedFeatures.all);
 // supports full document sync only
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
-// const htmlLanguageService = getLanguageService();
+const htmlLanguageService = getLanguageService();
 
 connection.onInitialize((_params: InitializeParams) => {
 	return {
@@ -25,27 +25,13 @@ connection.onInitialize((_params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: false,
 			},
-			// hoverProvider : true,
+			hoverProvider : true,
 
 		}
 	};
 });
 
 connection.onInitialized(() => { });
-
-// connection.onCompletion(async (textDocumentPosition, token) => {
-// 	const document = documents.get(textDocumentPosition.textDocument.uri);
-// 	console.log(document, token);
-// 	if (!document) {
-// 		return null;
-// 	}
-// 	// console.log("Receive:" token, )
-// 	return htmlLanguageService.doComplete(
-// 		document,
-// 		textDocumentPosition.position,
-// 		htmlLanguageService.parseHTMLDocument(document)
-// 	);
-// });
 
 documents.listen(connection);
 connection.listen();

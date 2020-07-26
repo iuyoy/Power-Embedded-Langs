@@ -1,5 +1,5 @@
 import { recognizeEmbeddedLanguage, extractVirtualContent } from '../../embeddedSupport';
-import { enabledEmbeddedLangs } from '../../embeddedLangs';
+import { enabledEmbeddedLangs } from '../../globals';
 import { workspace, Position, window } from 'vscode';
 import * as assert from 'assert';
 

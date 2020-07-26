@@ -1,14 +1,8 @@
-import { MultiLineStream, DocumentStream } from "./multiLineStream";
-import { ScannerState, TokenType, enabledEmbeddedLangs, EmbeddedLanguage } from "./embeddedLangs";
-import { off } from 'process';
-import { Position, TextDocument } from 'vscode';
-
-interface EmbeddedRegion {
-	languageId: string | undefined;
-	start: number;
-	end: number;
-	attributeValue?: boolean;
-}
+import { DocumentStream } from "./multiLineStream";
+import { EmbeddedLanguage } from "./embeddedLangs";
+import { Position, TextDocument, Uri } from 'vscode';
+import { enabledEmbeddedLangs, EXTENSION_NAME, virtualDocument } from './globals';
+import { debug } from 'console';
 
 function getLastLanguage(languages: EmbeddedLanguage[]): EmbeddedLanguage {
 	if (languages && languages.length) {
@@ -77,4 +71,22 @@ export function extractVirtualContent(document: TextDocument, language: Embedded
 		stream.advance(1);
 	}
 	return virtualContentArray.join('\n');
+}
+
+export function generateVirtualContentUri (document: TextDocument, position: Position, isContentModified: boolean = false) : Uri{
+	const lang = recognizeEmbeddedLanguage(document, position);
+	// If it is not in any embedded language code region, do not perform request forwarding
+	if (lang === null) {
+		return null;
+	}
+
+	const originalUri = document.uri.toString();
+	const decodedUri = decodeURIComponent(originalUri);
+	if (isContentModified === true || !virtualDocument.hasUri(decodedUri)) {
+		const extractedCode = extractVirtualContent(document, lang);
+		virtualDocument.setContent(decodedUri, extractedCode);
+	}
+	// debug(lang);
+	const uriString = `${EXTENSION_NAME}://${lang.name}/${encodeURIComponent(originalUri)}.${lang.suffix}`;
+	return Uri.parse(uriString);
 }

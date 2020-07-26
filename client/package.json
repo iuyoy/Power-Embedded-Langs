@@ -1,14 +1,19 @@
 {
-	"name": "lsp-sample-client",
+	"name": "pel-client",
 	"description": "VSCode part of a language server",
-	"author": "Microsoft Corporation",
-	"license": "MIT",
-	"version": "0.0.1",
-	"publisher": "vscode",
+	"version": "0.0.2",
+	"publisher": "iuyoy",
+	"author": {
+		"name": "iuyoy"
+	},
+	"bugs": {
+		"url": "https://github.com/iuyoy/Power-Embedded-Langs/issues"
+	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
+		"url": "https://github.com/iuyoy/Power-Embedded-Langs"
 	},
+	"license": "MIT",
 	"engines": {
 		"vscode": "^1.43.0"
 	},

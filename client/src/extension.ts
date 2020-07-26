@@ -4,23 +4,22 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from 'path';
-import { commands, CompletionList, ExtensionContext, Uri, workspace, DocumentSelector } from 'vscode';
+import { commands, CompletionList, Hover, ExtensionContext, Uri, workspace, DocumentSelector } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, WorkspaceChange } from 'vscode-languageclient';
-import { recognizeEmbeddedLanguage, extractVirtualContent } from './embeddedSupport';
-import { TokenType, EMBEDDED_LANGUAGES, enabledEmbeddedLangs, EmbeddedLanguage } from './embeddedLangs';
+import { recognizeEmbeddedLanguage, extractVirtualContent, generateVirtualContentUri } from './embeddedSupport';
+import { EMBEDDED_LANGUAGES, EmbeddedLanguage } from './embeddedLangs';
 import { debug } from 'console';
-import { isNull } from 'util';
-// import {} from 'SQL Language Basics';
+import { virtualDocument, enabledEmbeddedLangs, EXTENSION_NAME, CONFIGURATION_SECTION } from './globals';
 
-
-const EXTENSION_NAME = "power-embedded-langs";
-const CONFIGURATION_SECTION = "PEL";
 
 let client: LanguageClient;
+
 
 function initialize() {
 	const enabledEmbeddedLanguages: Array<string> = workspace.getConfiguration(CONFIGURATION_SECTION).get('enabledEmbeddedLanguages');
 	const enabledExternalLanguages: Array<string> = workspace.getConfiguration(CONFIGURATION_SECTION).get('enabledExternalLanguages');
+	// Todo: add user customize language setting
+	// const extraLanguageSettings = workspace.getConfiguration(CONFIGURATION_SECTION).get('extraLanguageSettings');
 	console.log("Enabled Embedded Lang Configure:", enabledEmbeddedLanguages);
 	console.log("Enabled External Lang Configure:", enabledExternalLanguages);
 
@@ -31,21 +30,9 @@ function initialize() {
 	console.log(documentSelectors);
 	for (var lang of EMBEDDED_LANGUAGES) {
 		if (enabledEmbeddedLanguages.find(name => name === lang.name)) {
-			// TODO: change to import when recognizing such language.
-			if (lang.languageServiceName !== "") {
-				const loadingLang = lang;
-				import(loadingLang.languageServiceName).then(
-					languageServer => {
-						const languageService = languageServer.getLanguageService();
-						lang.languageService = languageService;
-						console.log(`Token ${loadingLang.token} load ${loadingLang.languageServiceName} success`);
-						enabledEmbeddedLangs.push(new EmbeddedLanguage(loadingLang));
-					}
-				).catch(err => {
-					console.warn(`Failed to load ${loadingLang.name}'s language service ${loadingLang.languageServiceName}, disable this lang.`);
-				});
-			}
+			enabledEmbeddedLangs.push(new EmbeddedLanguage(lang));
 		}
+		debug(enabledEmbeddedLangs)
 	}
 	return documentSelectors;
 }
@@ -70,41 +57,42 @@ export function activate(context: ExtensionContext) {
 		}
 	};
 
-	const virtualDocumentContents = new Map<string, string>();
-
-	workspace.registerTextDocumentContentProvider('embedded-content', {
-		provideTextDocumentContent: uri => {
-			const originalUri = uri.path.slice(1).slice(0, uri.path.lastIndexOf('.') - uri.path.length);
-			const decodedUri = decodeURIComponent(originalUri);
-			return virtualDocumentContents.get(decodedUri);
-		}
+	workspace.registerTextDocumentContentProvider(EXTENSION_NAME, {
+		provideTextDocumentContent: uri => virtualDocument.getContent(uri)
 	});
 
 	let clientOptions: LanguageClientOptions = {
 		documentSelector: ds,//[{ scheme: 'file', language: '*' }],
 		middleware: {
+			// didSave: 
+			// handleDiagnostics:
 			provideCompletionItem: async (document, position, context, token, next) => {
-				// If it is not in any embedded language code region, do not perform request forwarding
-				// const region = judgeLanguageRegion(document.getText(), document.offsetAt(position));
-				const lang = recognizeEmbeddedLanguage(document, position);
-				if (isNull(lang)) {
-					return await next(document, position, context, token);
-				}
-				// let languageService = languageServices[TokenType[lang]];
-
-
-				const originalUri = document.uri.toString();
-				// virtualDocumentContents.set(originalUri, getCSSVirtualContent(lang.languageService, document.getText()));
-				virtualDocumentContents.set(originalUri, extractVirtualContent(document, lang));
-
-				const uriString = `embedded-content://${lang.name}/${encodeURIComponent(originalUri)}.${lang.suffix}`;
-				const vdocUri = Uri.parse(uriString);
-				return await commands.executeCommand<CompletionList>(
+				const vdocUri = generateVirtualContentUri(document, position, true);
+				return commands.executeCommand<CompletionList>(
 					'vscode.executeCompletionItemProvider',
 					vdocUri,
 					position,
 					context.triggerCharacter
 				);
+			},
+			provideHover: async (document, position, token, next) => {
+				const vdocUri = generateVirtualContentUri(document, position, false);
+				// There are three Hovers - vscode.Hover, modes.Hover and types.Hover
+				let results = await commands.executeCommand(
+					'vscode.executeHoverProvider',
+					vdocUri,
+					position,
+				)
+				console.log("results", results[0]);
+				if (results && results[0]) {
+					let contents =[];
+					results[0].contents.forEach(element => {
+						contents.push(element.value);
+					});
+					console.log(contents);
+					return new Hover(contents, results[0].range);
+				}
+				return ;
 			}
 		}
 	};

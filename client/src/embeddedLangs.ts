@@ -5,27 +5,27 @@
 
 // const embeddedSQL = new EmbeddedLanguage("", "");
 
-export enum ScannerState {
-	/* Language recognize state */
-	WithinExternalLanguage,
-	WithinSQL,
-	WithinHTML,
-	WithinJavaScript,
-	WithinCSS,
-	WithinYAML
-}
+// export enum ScannerState {
+// 	/* Language recognize state */
+// 	WithinExternalLanguage,
+// 	WithinSQL,
+// 	WithinHTML,
+// 	WithinJavaScript,
+// 	WithinCSS,
+// 	WithinYAML
+// }
 
-export enum TokenType {
-	/* new language should be inserted after ExternalLanguage and before EOS */
-	ExternalLanguage,
-	SQL,
-	HTML,
-	JavaScript,
-	CSS,
-	YAML,
-	EOS,
-	Unknown
-}
+// export enum TokenType {
+// 	/* new language should be inserted after ExternalLanguage and before EOS */
+// 	ExternalLanguage,
+// 	SQL,
+// 	HTML,
+// 	JavaScript,
+// 	CSS,
+// 	YAML,
+// 	EOS,
+// 	Unknown
+// }
 
 // The order of EMBEDDED_LANGUAGES should be same as TokenType
 
@@ -36,14 +36,10 @@ export class Pattern {
 }
 
 export class EmbeddedLanguage {
-	public languageService: any;
-	public languageServiceName: string;
 	public name: string;
 	public pattern: Pattern;
 	public suffix: string;
-	constructor(lang: { languageService: any, languageServiceName: string, name: string, pattern: { begin: RegExp, end: RegExp }, suffix: string }) {
-		this.languageService = lang.languageService;
-		this.languageServiceName = lang.languageServiceName;
+	constructor(lang: {  name: string, pattern: { begin: RegExp, end: RegExp }, suffix: string }) {
 		this.name = lang.name;
 		this.pattern = new Pattern(lang.pattern);
 		this.suffix = lang.suffix;
@@ -59,8 +55,6 @@ export let EMBEDDED_LANGUAGES = [
 			"begin": /-- *(beginsql|begin-sql).*/i,
 			"end": /-- *(endsql|end-sql).*/i,
 		},
-		"token": TokenType.SQL,
-		"state": ScannerState.WithinSQL,
 		"suffix": "sql"
 	}, {
 		"languageService": null,
@@ -70,8 +64,6 @@ export let EMBEDDED_LANGUAGES = [
 			"begin": /<!-- *html.*-->/i,
 			"end": /<!-- *!html.*-->/i
 		},
-		"token": TokenType.HTML,
-		"state": ScannerState.WithinHTML,
 		"suffix": "html"
 	}, {
 		"languageService": null,
@@ -80,8 +72,7 @@ export let EMBEDDED_LANGUAGES = [
 		"pattern": {
 			"begin": /\/\/ *js.*/i,
 			"end": /\/\/ *!js.*/i
-		}, "token": TokenType.JavaScript,
-		"state": ScannerState.WithinJavaScript,
+		},
 		"suffix": "js"
 	}, {
 		"languageService": null,
@@ -90,8 +81,7 @@ export let EMBEDDED_LANGUAGES = [
 		"pattern": {
 			"begin": /\/\* *css.*\*\//i,
 			"end": /\/\* *!css.*\*\//i
-		}, "token": TokenType.CSS,
-		"state": ScannerState.WithinCSS,
+		},
 		"suffix": "css"
 	}, {
 		"languageService": null,
@@ -100,10 +90,7 @@ export let EMBEDDED_LANGUAGES = [
 		"pattern": {
 			"begin": / /,
 			"end": / /,
-		}, "token": TokenType.YAML,
-		"state": ScannerState.WithinYAML,
+		},
 		"suffix": "yaml"
 	}
 ];
-
-export let enabledEmbeddedLangs = Array<EmbeddedLanguage>();

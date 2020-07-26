@@ -1,84 +1,91 @@
-# power-embedded-langs README
+# Power Embedded Langs
 
-This is the README for your extension "power-embedded-langs". After writing up a brief description, we recommend including the following sections.
+A VSCode Extension to support some specific language features for languages which are embedded into other languages.
 
-## Features
+Currently, it supports the basic autocompletion and hover prompt for sql, javascript, css and html. These languages are recoginzed by specific sign pairs using RegEx. The result of autocompletion and hover prompt are related to recoginezd embedded language itself.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+<!-- ## Documents
 
-For example if there is an image subfolder under your extension project workspace:
+English | [中文文档]() -->
 
-\!\[feature X\]\(images/feature-x.png\)
+## Concepts
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Here are some concepts used in this extension:
+
+| Concept           | Description                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| External Language | The original language of a file.                                                                                                    |
+| Embedded Language | A language which is embedded into the external languages.                                                                           |
+| Sign Pair         | A pair of text which is used to mark and recognize embedded languages. Always the signs will be comments of such embedded language. |
+
+## Features & Support Languages
+
+- [x] autocomplete - base support
+- [x] hover - base support
+- [x] highlight - which has been supported in another extension [highlight-string-code](https://marketplace.visualstudio.com/items?itemName=iuyoy.highlight-string-code). However, the matching logic of nested sign pairs are different from this extension now.
+- [ ] more features will be support.
+
+### Sign Pairs (so far)
+
+| Language | Start Sign                   | End Sign                 | Comment |
+| -------- | ---------------------------- | ------------------------ | ------- |
+| SQL      | `-- *(beginsql|begin-sql).*` | `-- *(endsql|end-sql).*` |
+| HTML     | `<!-- *html.*-->`            | `<!-- *!html.*-->`       |
+| JS       | `\/\/ *js.*`                 | `\/\/ *!js.*`            |
+| CSS      | `\/\* *css.*\*\/`            | `\/\* *!css.*\*\/`       |
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Latest Visual Studio Code is recommended.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- `PEL.enabledEmbeddedLanguages`: Specifies what embedded languages will be recognized.
+- `PEL.enabledExternalLanguages`: Specifies files of what external languages the extension will monitor.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### Unreleased
 
-### 1.0.0
+- Implement basic support for auto completion and hovering
+- Initial release
 
-Initial release of ...
+More release notes can be found at [CHANGELOG.md](./CHANGELOG.md).
 
-### 1.0.1
+## Known Issues
 
-Fixed issue #.
+See [known issue](https://github.com/iuyoy/Power-Embedded-Langs/labels/known%20issue) for more infomation.
 
-### 1.1.0
+## Design and Implement
 
-Added features X, Y, and Z.
+This extension is based on the *Request Forwarding* method in VSCode official doc of embedded languages.
 
------------------------------------------------------------------------------------------------------------
+Work Flow:
 
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- Client
+  1. The extension will scan the whole code text when typing any character.
+  2. Recognize the language at the position of cursor.
+  3. If language is an embedded language, all corresponding code will be extracted from the file.
+  4. Call correspond functions to supported feature.
 
 ## TODO
 
-* Features
-  * [ ] highlight
-  * [ ] hover
-  * [ ] autocomplete
-* Functions
-  * [ ] embedded langs enabled selection
-    * [x] configure
-    * [ ] changed reload
-  * [ ] external langs enabled selection
-    * [x] configure
-    * [ ] changed reload
-  * [ ] embedded langs recognition
-  * [ ] dynamic importing modules
-* [ ] Tests
-  * [ ] language recognition test
-  * [ ] 
+- [x] general embedded langs recognition
+- [ ] refresh status when configuration are changed
+- [ ] ~~dynamic importing third-part language server modules (not need anymore)~~
+- [x] common virtual document extraction
+- [ ] customize embedded language settings, including sign pairs, name and suffix.
+- [ ] popup a notfication when extension updated.
+- [ ] Chinese document.
+
+## Tests
+
+- [ ] language recognition test
+- [ ] language extraction test
+
+## References
+
+- Visual Studio Code Extension API
+  - [Language Server for Embedded Programming Languages](https://code.visualstudio.com/api/language-extensions/embedded-languages)
